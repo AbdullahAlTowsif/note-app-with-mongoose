@@ -1,7 +1,13 @@
 import { Model, model, Schema } from "mongoose";
-import { IAddress, IUser, UserInstanceMethods, UserStaticMethods } from "../interfaces/user.interface";
+import {
+  IAddress,
+  IUser,
+  UserInstanceMethods,
+  UserStaticMethods,
+} from "../interfaces/user.interface";
 import validator from "validator";
 import bcrypt from "bcryptjs";
+import { Note } from "./notes.models";
 
 const addressSchema = new Schema<IAddress>(
   {
@@ -85,26 +91,50 @@ const userSchema = new Schema<IUser, UserStaticMethods, UserInstanceMethods>(
 );
 
 // for instance method
-userSchema.method("hashPassword", async function (plainPassword: string){
-  const password = await bcrypt.hash(plainPassword, 10)
+userSchema.method("hashPassword", async function (plainPassword: string) {
+  const password = await bcrypt.hash(plainPassword, 10);
   return password;
-})
+});
 
 // for static method
-userSchema.static("hashPassword", async function (plainPassword: string){
-  const password = await bcrypt.hash(plainPassword, 10)
+userSchema.static("hashPassword", async function (plainPassword: string) {
+  const password = await bcrypt.hash(plainPassword, 10);
   return password;
-})
+});
 
 // for middleware | pre or post hooks
-userSchema.pre("save", async function(){
+
+// pre hook
+
+// document middleware
+userSchema.pre("save", async function (next) {
   // console.log(this);
-  this.password = await bcrypt.hash(this.password, 10)
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
+
+
+// query middleware
+userSchema.pre("find", function (next) {
+  console.log("Inside pre find hook");
+  next();
 })
 
-userSchema.post("save", function(doc) {
+// post hook
+
+// query middleware: find the user by id and delete the user and all the notes created by that user
+userSchema.post("findOneAndDelete", async function (doc, next) {
+  if (doc) {
+    await Note.deleteMany({ user: doc._id });
+  }
+  next();
+});
+
+// document middleware
+userSchema.post("save", function (doc, next) {
   console.log(`${doc._id} has been saved`);
-})
+  next();
+});
 
 // for instanec method
 // export const User = model<IUser, Model<IUser, {}, UserInstanceMethods>>("User", userSchema);

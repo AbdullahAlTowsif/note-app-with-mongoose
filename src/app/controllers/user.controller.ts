@@ -44,7 +44,6 @@ usersRoutes.post("/create-user", async (req: Request, res: Response) => {
       message: "User created successfully",
       user: user,
     });
-
   } catch (error) {
     console.log(error);
   }
@@ -89,9 +88,12 @@ usersRoutes.patch("/:userId", async (req: Request, res: Response) => {
 // delete user by id
 usersRoutes.delete("/:userId", async (req: Request, res: Response) => {
   const userId = req.params.userId;
-  const user = await User.findByIdAndDelete(userId);
+  // const user = await User.findByIdAndDelete(userId);
   // const note = await User.deleteOne({_id: noteId})
   // const note = await User.findOneAndDelete({_id: noteId})
+
+  // for query middleware | And normal case
+  const user = await User.findOneAndDelete({ _id: userId });
 
   res.status(201).json({
     success: true,
