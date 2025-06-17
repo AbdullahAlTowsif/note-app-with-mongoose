@@ -84,14 +84,26 @@ const userSchema = new Schema<IUser, UserStaticMethods, UserInstanceMethods>(
   }
 );
 
+// for instance method
 userSchema.method("hashPassword", async function (plainPassword: string){
   const password = await bcrypt.hash(plainPassword, 10)
   return password;
 })
 
+// for static method
 userSchema.static("hashPassword", async function (plainPassword: string){
   const password = await bcrypt.hash(plainPassword, 10)
   return password;
+})
+
+// for middleware | pre or post hooks
+userSchema.pre("save", async function(){
+  // console.log(this);
+  this.password = await bcrypt.hash(this.password, 10)
+})
+
+userSchema.post("save", function(doc) {
+  console.log(`${doc._id} has been saved`);
 })
 
 // for instanec method
