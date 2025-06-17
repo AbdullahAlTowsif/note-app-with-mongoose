@@ -87,6 +87,8 @@ const userSchema = new Schema<IUser, UserStaticMethods, UserInstanceMethods>(
   {
     versionKey: false,
     timestamps: true,
+    toJSON: {virtuals: true},
+    toObject: {virtuals: true}
   }
 );
 
@@ -135,6 +137,13 @@ userSchema.post("save", function (doc, next) {
   console.log(`${doc._id} has been saved`);
   next();
 });
+
+
+// virtual mongoose
+userSchema.virtual('fullName').get(function(){
+  return `${this.firstName} ${this.lastName}`
+})
+
 
 // for instanec method
 // export const User = model<IUser, Model<IUser, {}, UserInstanceMethods>>("User", userSchema);
