@@ -36,7 +36,6 @@ usersRoutes.post("/create-user", async (req: Request, res: Response) => {
     // const password = await User.hashPassword(body.password)
     // body.password = password
 
-
     const user = await User.create(body);
 
     res.status(201).json({
@@ -51,7 +50,24 @@ usersRoutes.post("/create-user", async (req: Request, res: Response) => {
 
 // get all users
 usersRoutes.get("/", async (req: Request, res: Response) => {
-  const users = await User.find();
+  const userEmail = req.query.email;
+  let users = [];
+
+  // filtering
+  if (userEmail) {
+    users = await User.find({ email: userEmail });
+  } else {
+    users = await User.find();
+  }
+
+  // sorting
+  users = await User.find().sort({"email": "ascending"});
+  
+  // skipping
+  users = await User.find().skip(2)
+
+  // limit
+  users = await User.find().limit(2);
 
   res.status(201).json({
     success: true,
